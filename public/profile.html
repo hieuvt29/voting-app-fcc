@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Voting App by Hieuvt</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">VotingApp</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li><a href="/">Home</a></li>
+                <li class="active"><a href="/profile">My Polls</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="user-info">
+            <h3>Display Name: <span id="profile-displayName"></span></h3>
+        </div>
+        <button class="btn btn-info"><a href="/createPoll">NEW POLL</a></button>
+        <div class="content jumbotron"></div>
+        <script type="text/javascript" src="common/ajax-functions.js"></script>
+        <script type="text/javascript" src="controllers/userController.client.js"></script>
+        <script type="text/javascript">
+        function init() {
+            var content = $(".content");
+            var pollList = $("<ul id='poll-list'></ul>")
+
+            function showPolls(title, id, element) {
+                var value = "<h3><a href='/single?pollId=" + id + "'>" + title + "</a></h3><button class='btn btn-danger' onclick='deletePoll(\"" + id + "\")' >Delete</button>";
+
+                var li = $("<li class='poll'></li>").html(value);
+                element.append(li); // Append the new elements 
+            }
+
+            ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', appUrl + '/api/user/polls', function(data) {
+                var polls = JSON.parse(data);
+
+                for (var i = 0; i < polls.length; i++) {
+                    showPolls(polls[i].title, polls[i]._id, pollList);
+                }
+                content.html("");
+                content.append(pollList);
+            }));
+        };
+        init();
+
+        function deletePoll(id) {
+            ajaxFunctions.ready(ajaxFunctions.ajaxRequest('DELETE', appUrl + '/api/poll/'+ id, function(res) {
+                var res = JSON.parse(res);
+                init();
+                alert("Deleted Poll!");
+                console.log(res.message);
+            }));
+        }
+        </script>
+    </div>
+</body>
+
+</html>

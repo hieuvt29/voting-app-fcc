@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Voting App by Hieuvt</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">VotingApp</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="/">Home</a></li>
+                <li><a href="/profile">My Polls</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="content jumbotron">
+            <h1>All Polls</h1>
+        </div>
+        <script type="text/javascript" src="common/ajax-functions.js"></script>
+        <script type="text/javascript">
+        (function() {
+            var content = $(".content");
+            var pollList = $("<ul id='poll-list'></ul>")
+
+            function showPolls(title, id, element) {
+                var value = "<h3><a href='/single?pollId=" + id + "'>" + title + "</a></h3>";
+                var li = $("<li class='poll'></li>").html(value);
+                element.append(li); // Append the new elements 
+            }
+
+            ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', appUrl + '/api/allpolls', function(data) {
+                var polls = JSON.parse(data);
+
+                for (var i = 0; i < polls.length; i++) {
+                    showPolls(polls[i].title, polls[i]._id, pollList);
+                }
+                content.append(pollList);
+               
+            }));
+        })();
+
+        </script>
+    </div>
+</body>
+
+</html>

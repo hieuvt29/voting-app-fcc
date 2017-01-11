@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Voting App by Hieuvt</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="public/js/Chart.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">VotingApp</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="/">Home</a></li>
+                <li><a href="/profile">My Polls</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="content jumbotron">
+            <h3 id="poll-title"></h3>
+            <select id="votes" class="form-control"></select>
+            <button class="btn btn-info" id="vote-btn">Vote</button>
+            <div id="graph">
+                <canvas id="pieChart" width="400" height="400" style="display: block;"></canvas>
+            </div>
+        </div>
+        <script type="text/javascript" src="common/ajax-functions.js"></script>
+        <script type="text/javascript">
+        var pollTitle = $("#poll-title");
+        var votes = $("#votes");
+
+        var content = $(".content");
+        //Get poll form database
+        (function() {
+            function getQueryParams(qs) {
+                qs = qs.split('+').join(' ');
+
+                var params = {},
+                    tokens,
+                    re = /[?&]?([^=]+)=([^&]*)/g;
+
+                while (tokens = re.exec(qs)) {
+                    params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+                }
+
+                return params;
+            }
+            var query = getQueryParams(document.location.search);
+            ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', appUrl + '/api/poll/' + query.pollId, function(data) {
+                var poll = JSON.parse(data);
+                //console.log("poll result: " + poll);
+                pollTitle.html(poll.title);
+                for (var i = 0; i < poll.votes.length; i++) {
+                    votes.append("<option value='" + poll.votes[i]._id + "'>" + poll.votes[i].content + "</option>")
+
+                }
+                showChart(poll);
+
+            }));
+            $("#vote-btn").on("click", function() {
+                var voteId = $("select").val();
+                ajaxFunctions.ajaxRequest("POST", appUrl + '/api/vote/' + query.pollId + '/' + voteId, function(result) {
+                    var data = null;
+                    try {
+                        data = JSON.parse(result);
+                        if (data.changed) {
+                            showChart(data.poll);
+                        } else {
+                            alert("You've already voted for this poll!");
+                        }
+                    } catch (e) {
+                        alert("Login first!");
+                    }
+
+
+
+                });
+            })
+        })();
+
+        //Show data on chart
+        function showChart(poll) {
+            var ctx = $("#pieChart");
+
+            function getRandomColor() {
+                var letters = '0123456789ABCDEF'.split('');
+                var color = '#';
+                for (var i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
+
+            var data = {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [],
+                    hoverBackgroundColor: []
+                }]
+            };
+            for (var i = 0; i < poll.votes.length; i++) {
+                data.labels.push(poll.votes[i].content);
+                data.datasets[0].data.push(poll.votes[i].count);
+                data.datasets[0].backgroundColor.push(getRandomColor());
+                data.datasets[0].hoverBackgroundColor.push(getRandomColor());
+            }
+            var options = {
+                    animation: {
+                        animateScale: true
+                    },
+                    maintainAspectRatio: false
+                }
+                // For a pie chart
+            var myPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: options
+            });
+        }
+        </script>
+    </div>
+</body>
+
+</html>

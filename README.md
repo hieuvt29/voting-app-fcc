@@ -4,9 +4,7 @@
 - HTML/ CSS
 
 ### Back-end
-- express
-- Mongoose
-- passport
+- nodejs + express + mongoose + passport
 
 ## Các bước xây dựng
 1. Xây dựng các cơ sở dữ liệu ( các model )
